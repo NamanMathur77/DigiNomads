@@ -5,6 +5,7 @@ from typing import List
 from sqlalchemy import create_engine, Column, Integer, String
 from sqlalchemy.orm import sessionmaker, declarative_base
 from coordinate import Coordinate
+from fastapi.middleware.cors import CORSMiddleware
 
 # MySQL database connection URL
 DATABASE_URL = "mysql+pymysql://root:*october2020@localhost/nomad_database"
@@ -19,6 +20,15 @@ SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base = declarative_base()
 
 app = FastAPI()
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # Or specify the Angular app URL
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 
 # Dependency for database session
 def get_db():
