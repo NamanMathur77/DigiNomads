@@ -1,56 +1,14 @@
-from fastapi import FastAPI, HTTPException, Depends
-from pydantic import BaseModel
-from city import City
+from fastapi import Depends
 from typing import List
-from sqlalchemy import create_engine, Column, Integer, String
-from sqlalchemy.orm import sessionmaker, declarative_base
+import config
 from coordinate import Coordinate
-from fastapi.middleware.cors import CORSMiddleware
+from city import City
 
-# MySQL database connection URL
-DATABASE_URL = "mysql+pymysql://root:*october2020@localhost/nomad_database"
-
-# Create the SQLAlchemy engine
-engine = create_engine(DATABASE_URL)
-
-# SessionLocal for database session
-SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
-
-# Base class for models
-Base = declarative_base()
-
-app = FastAPI()
-
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],  # Or specify the Angular app URL
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
-
-
-# Dependency for database session
-def get_db():
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
-
-# Define the User model
-class City(Base):
-    __tablename__ = "cities"
-    id = Column(Integer, primary_key=True, index=True)
-    city_ascii = Column(String)
-    country = Column(String)
-    population = Column(Integer)
-    lat = Column(Integer)
-    lng = Column(Integer)
-
+localSession = config.Config
+app = config.create_app()
 
 @app.get("/cities")
-def get_cities(db: SessionLocal = Depends(get_db)):
+def get_cities(db: localSession.SessionLocal = Depends(localSession.get_db)):
     cities_list : List[City]
     cities_list = db.query(City).limit(10).all()
     for city in cities_list:
