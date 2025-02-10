@@ -1,11 +1,12 @@
 import json
 from fastapi import Depends, Query
+from models.DataModels.city import City
 from sqlalchemy.orm import Session
 from sqlalchemy import text
 from typing import List
 import config
 from coordinate import Coordinate
-from city import City
+from models.ORM.city import CityORM
 
 app = config.create_app()
 
@@ -14,8 +15,8 @@ def get_cities(
     db: Session = Depends(config.Config.get_db),
     limit: int = Query(10, description="Number of cities to fetch"),
     offset: int = Query(0, description="Number of cities to skip")):
-    cities_list : List[City]
-    cities_list = db.query(City).offset(offset).limit(limit).all()
+    cities_list : List[CityORM]
+    cities_list = db.query(CityORM).offset(offset).limit(limit).all()
     for city in cities_list:
         city.coordinates = Coordinate(city.lat, city.lng)
     return cities_list
@@ -44,3 +45,14 @@ def get_closest_cities(
         return {"message": "No cities found"}
 
     return json.dumps(results)
+
+@app.post("/cities")
+def createCity(city: City, db: Session = Depends(config. Config.get_db)):
+    new_city = CityORM(city_ascii = city.name, country = city.country, population = city.population, lat = city.lat, lng = city.lng)
+    db.add(new_city)
+    db.commit()
+    db.refresh(new_city)
+    return {
+        "message": "City added Successfully", 
+        "city": new_city
+    }

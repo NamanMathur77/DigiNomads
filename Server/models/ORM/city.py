@@ -7,7 +7,7 @@ from sqlalchemy.orm import sessionmaker, declarative_base
 Base = declarative_base()
 
 # Define the User model
-class City(Base):
+class CityORM(Base):
     __tablename__ = "cities"
     id = Column(Integer, primary_key=True, index=True)
     city_ascii = Column(String)
